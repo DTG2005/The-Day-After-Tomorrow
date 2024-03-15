@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.UI;
 using UnityEngine;
+using UnityEngineInternal;
 
 public class S_PlayerMovement : MonoBehaviour
 {
+    char mode = 'N';
+    Dictionary<string, float> moveset = new Dictionary<string, float>();
     public CharacterController controller;
     public GameObject cam;
     public GameObject combatCam;
@@ -17,10 +20,22 @@ public class S_PlayerMovement : MonoBehaviour
     public float currentHealth;
     public Dictionary<string, int> effects = new Dictionary<string, int>();
 
+    public int charge = 0;
+
     public S_HealthBarScript healthBar;
     public bool isInCombat;
+    public S_EnemyScript s1;
+
+    public void TakeDamage(float dmg){
+        currentHealth-= dmg;
+        healthBar.SetHealth(currentHealth);
+    }
 
     void Start(){
+        moveset["block"] = -5f;
+        moveset["attack"] = 20f;
+        moveset["strong attack"] = 40f;
+
         currentHealth = maxHealth;
         healthBar.SetMaxHealth(maxHealth);
         combatCam.SetActive(false);
@@ -37,6 +52,27 @@ public class S_PlayerMovement : MonoBehaviour
             controller.enabled = false;
             cam.SetActive(false);
             combatCam.SetActive(true);
+            if(!s1.turn){
+                if (charge == 0){
+                    if(Input.GetKeyDown(KeyCode.Alpha0)){
+                        currentHealth +=5f;
+                        s1.turn = true;
+                    } else if (Input.GetKeyDown(KeyCode.Alpha1)){
+                        s1.health -= 20f;
+                        s1.turn = true;
+                    } else if (Input.GetKeyDown(KeyCode.Alpha2)){
+                        s1.turn = true;
+                        charge = 1;
+                    }
+                } else{
+                    charge -=1;
+                    if(charge == 0){
+                        s1.health -= 40f;
+                        s1.turn = true;
+                    }
+                }
+                Debug.Log(s1.health);
+            }
         } else if(combatCam.activeInHierarchy){
             combatCam.SetActive(false);
             cam.SetActive(true);
@@ -55,8 +91,7 @@ public class S_PlayerMovement : MonoBehaviour
         }
         // TODO: Whenever the player takes damage in the future, subtract from the currentHealth float and call the healthBar.SetHealth()
         if(Input.GetKeyDown(KeyCode.Space)){
-            currentHealth -= 5f;
-            healthBar.SetHealth(currentHealth);
+            TakeDamage(5f);
         }
         if(effects.ContainsKey("Bleed")){
             if(effects["Bleed"]==0){
@@ -64,8 +99,7 @@ public class S_PlayerMovement : MonoBehaviour
             } else {
                 if(secondTimer <= 0){
                     effects["Bleed"]-=1;
-                    currentHealth -= 2f;
-                    healthBar.SetHealth(currentHealth);
+                    TakeDamage(2f);
                 }
             }
         }
