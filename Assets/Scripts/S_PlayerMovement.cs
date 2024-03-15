@@ -10,7 +10,9 @@ public class S_PlayerMovement : MonoBehaviour
     public float smoothTime = 0.1f;
     float smoothVelocity;
     public float maxHealth = 100;
+    float secondTimer = 1f;
     public float currentHealth;
+    public Dictionary<string, int> effects;
 
     public S_HealthBarScript healthBar;
 
@@ -21,9 +23,14 @@ public class S_PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        secondTimer-=Time.deltaTime;
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
         Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if(currentHealth <=20){
+            effects["Bleed"] = -1;
+        }
 
         if (direction.magnitude>=0.1f){
             float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg + cam.eulerAngles.y;
@@ -36,6 +43,20 @@ public class S_PlayerMovement : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Space)){
             currentHealth -= 5f;
             healthBar.SetHealth(currentHealth);
+        }
+        if(effects.ContainsKey("Bleed")){
+            if(effects["Bleed"]==0){
+                effects.Remove("Bleed");
+            } else {
+                if(Time.deltaTime <= 0){
+                    effects["Bleed"]-=1;
+                    currentHealth -= 2f;
+                    healthBar.SetHealth(currentHealth);
+                }
+            }
+        }
+        if(secondTimer <= 0){
+            secondTimer = 1;
         }
     }
 }
