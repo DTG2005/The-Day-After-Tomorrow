@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "The Day after Tomorrow.sln"
+    "dotnet.defaultSolution": "The-Day-After-Tomorrow.sln"
 }
